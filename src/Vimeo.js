@@ -15,17 +15,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE. */
-(function (root, factory) {
-  if(typeof define === 'function' && define.amd) {
-    define(['video.js'], function(videojs){
-      return (root.Vimeo = factory(videojs));
-    });
-  } else if(typeof module === 'object' && module.exports) {
-    module.exports = (root.Vimeo = factory(require('video.js')));
-  } else {
-    root.Vimeo = factory(root.videojs);
-  }
-}(this, function(videojs) {
+(function(videojs) {
   'use strict';
 
   var VimeoState = {
@@ -41,7 +31,7 @@ THE SOFTWARE. */
   var Vimeo = videojs.extend(Tech, {
     constructor: function(options, ready) {
       Tech.call(this, options, ready);
-      if(options.poster != "") {this.setPoster(options.poster);}
+      if(options.poster !=='') {this.setPoster(options.poster);}
       this.setSrc(this.options_.source.src, true);
 
       // Set the vjs-vimeo class to the player
@@ -100,8 +90,8 @@ THE SOFTWARE. */
         Vimeo.apiReadyQueue.push(this);
       }
 
-      if(this.options_.poster == "") {
-        $.getJSON(this.baseApiUrl + this.videoId + '.json?callback=?', {format: "json"}, (function(_this){
+      if(this.options_.poster === '') {
+        $.getJSON(this.baseApiUrl + this.videoId + '.json?callback=?', {format: 'json'}, (function(_this){
           return function(data) {
             // Set the low resolution first
             _this.setPoster(data[0].thumbnail_large);
@@ -306,7 +296,7 @@ THE SOFTWARE. */
 
       try {
 
-        $.getJSON(this.baseApiUrl + this.videoId + '.json?callback=?', {format: "json"}, (function(_uri){
+        $.getJSON(this.baseApiUrl + this.videoId + '.json?callback=?', {format: 'json'}, (function(_uri){
           return function(data) {
             // Set the low resolution first
             _uri = data[0].thumbnail_large;
@@ -663,4 +653,4 @@ THE SOFTWARE. */
       return (window.Froogaloop = window.$f = Froogaloop);
 
   })();
-}));
+});

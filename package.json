@@ -1,8 +1,10 @@
 {
   "name": "videojs-vimeo",
+  "description": "Vimeo playback technology for Video.js",
   "version": "2.0.2",
-  "description": "Allows you to use Vimeo URL as source with Video.js.",
-  "main": "src/Vimeo.js",
+  "author": "Benoit Tremblay <trembl.ben@gmail.com>",
+  "license": "MIT",
+  "main": "dist/Vimeo.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -12,13 +14,36 @@
   },
   "keywords": [
     "video.js",
+    "videojs",
     "vimeo",
-    "plugin"
+    "tech"
   ],
-  "author": "Benoit Tremblay <trembl.ben@gmail.com>",
-  "license": "MIT",
   "bugs": {
     "url": "https://github.com/eXon/videojs-vimeo/issues"
   },
-  "homepage": "https://github.com/eXon/videojs-vimeo#readme"
+  "homepage": "https://github.com/eXon/videojs-vimeo#readme",
+  "peerDependencies": {
+    "video.js": "5.x"
+  },
+  "dependencies": {
+    "video.js": "^5.6.0"
+  },
+  "devDependencies": {
+    "http-server": "^0.8.0",
+    "jasmine-core": "^2.3.4",
+    "jshint": "^2.8.0",
+    "karma": "^0.12.37",
+    "karma-chrome-launcher": "^0.2.0",
+    "karma-jasmine": "^0.3.6",
+    "mkdirp": "^0.5.1",
+    "precommit-hook": "^3.0.0",
+    "uglify-js": "^2.4.23"
+  },
+
+  "scripts": {
+    "build": "mkdirp dist && cp src/Vimeo.js dist/Vimeo.js && uglifyjs src/Vimeo.js -o dist/Vimeo.min.js",
+    "lint": "jshint .",
+    "test": "karma start --single-run",
+    "validate": "npm ls"
+  }
 }
