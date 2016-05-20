@@ -300,7 +300,7 @@
     },
 
     // TRIGGER
-    load:() {
+    load() {
       this.initPlayer();
       this.loadPoster();
     },
