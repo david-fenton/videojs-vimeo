@@ -39,7 +39,7 @@
       console.log('Vimeo Tech constructor');
 
       if(options.poster !== '') {this.setPoster(options.poster);}
-      this.setSrc(this.options_.source.src, true);
+      this.setSrc(this.options_.source.src);
 
       const self = this;
       // Set the vjs-vimeo class to the player
@@ -51,6 +51,39 @@
 
     dispose() {
       this.el_.parentNode.className = this.el_.parentNode.className.replace(' vjs-vimeo', '');
+    },
+
+    loadPoster() {
+      $.getJSON(this.baseApiUrl + this.videoId + '.json?callback=?', {format: "json"}, (function(_this){
+        console.log('poster getJSON callback.');
+
+        return function(data) {
+          console.log('callback setting poster');
+
+          // Set the duration of the video, since it must be manually tracked with vimeo.
+          _this.vimeoInfo.duration = data[0].duration;
+          _this.player_.duration(_this.vimeoInfo.duration);
+
+          // Set the low resolution first
+          if(_this.options_.poster == "") {
+            if (data[0].thumbnail_large) {
+              _this.setPoster(data[0].thumbnail_large);
+            }
+            else if (data[0].thumbnail_medium) {
+              _this.setPoster(data[0].thumbnail_medium);
+            }
+            else {
+              _this.setPoster(data[0].thumbnail_small);
+            }
+
+            _this.poster(_this.poster_);
+            _this.trigger('posterchange');
+            $('.vjs-poster').css({
+              'background-image': 'url(' + _this.poster_ + ')'
+            });
+          }
+        };
+      })(this));
     },
 
     createEl() {
@@ -99,23 +132,14 @@
         Vimeo.apiReadyQueue.push(this);
       }
 
-      if(this.options_.poster === '') {
-        HTTP.get(`${this.baseApiUrl}${this.videoId}.json?callback=?`, { format: "json" }, (function(_this){
-          console.log('poster getJSON callback.');
-
-          return function(data) {
-            console.log('callback setting poster');
-            // Set the low resolution first
-            _this.setPoster(data[0].thumbnail_large);
-          };
-        })(this));
-      }
+      this.loadPoster();
 
       return divWrapper;
     },
-
+    
     initPlayer() {
       const self = this;
+      
       // load vimeo
       if(this.vimeo && this.vimeo.api) {
         this.vimeo.api('unload');
@@ -124,7 +148,6 @@
 
       // $f is Froogaloop.
       self.vimeo = $f(self.iframe);
-
       self.vimeoInfo = {
         state: VimeoState.UNSTARTED,
         volume: 1,
@@ -141,14 +164,12 @@
         console.log('Vimeo API ready!');
 
         self.onReady();
-
         self.vimeo.addEvent('loadProgress', function(data, id){ self.onLoadProgress(data); });
         self.vimeo.addEvent('playProgress', function(data, id){ self.onPlayProgress(data); });
         self.vimeo.addEvent('play', function(id){ self.onPlay(); });
         self.vimeo.addEvent('pause', function(id){ self.onPause(); });
         self.vimeo.addEvent('finish', function(id){ self.onFinish(); });
         self.vimeo.addEvent('seek', function(data, id){ self.onSeek(data); });
-
       });
     },
 
@@ -223,7 +244,15 @@
       }
     },
 
-    src() {
+    src(src) {
+      if (src) {
+        this.setSrc({ src: src });
+
+        if (this.options_.autoplay && !_isOnMobile) {
+          this.play();
+        }
+      }
+
       return this.source;
     },
 
@@ -238,20 +267,22 @@
     setSrc(source) {
       if(!source || !source.src) return;
 
+      if (source.src && this.options_ && this.options.source && this.options.source.src) {
+        this.options_.source.src = source.src;
+      }
+
       this.source = source;
       this.url = Vimeo.parseUrl(source.src);
 
-      if(!this.options_.poster) {
-        if(this.url.videoId) {
-          HTTP.get(`${this.baseApiUrl}${this.videoId}.json?callback=?`, { format: "json" }, (function(_this){
-            return function(data) {
-              // Set the low resolution first
-              _this.poster_ = data[0].thumbnail_small;
-            };
-          })(this));
+      if (!this.options_.poster) {
+        if (this.url.videoId) {
+          // Update iframe refs on url change.
+          this.videoId = this.url.videoId;
+          this.iframe.setAttribute('src', this.baseUrl + this.videoId + '?api=1&player_id=' + this.options_.techId);
 
-          // Check if their is a high res
-          this.checkHighResPoster();
+          // Update the poster on source change.
+          this.loadPoster();
+          //this.checkHighResPoster();
         }
       }
 
@@ -269,7 +300,10 @@
     },
 
     // TRIGGER
-    load() { },
+    load:() {
+      this.initPlayer();
+      this.loadPoster();
+    },
 
     play() {
       this.vimeo.api('play');
@@ -427,7 +461,6 @@
   videojs.registerTech('Vimeo', Vimeo);
 
   // Froogaloop API -------------------------------------------------------------
-
   // From https://github.com/vimeo/player-api/blob/master/javascript/froogaloop.js
   // Init style shamelessly stolen from jQuery http://jquery.com
   var Froogaloop = (function(){

@@ -1,7 +1,7 @@
 {
   "name": "videojs-vimeo",
   "description": "Vimeo playback technology for Video.js",
-  "version": "2.0.2",
+  "version": "2.0.4",
   "author": "Benoit Tremblay <trembl.ben@gmail.com>",
   "license": "MIT",
   "main": "dist/Vimeo.js",
